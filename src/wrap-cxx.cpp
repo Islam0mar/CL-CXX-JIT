@@ -75,7 +75,7 @@ constexpr bool IsFunction() {
 template <typename T>
 constexpr bool IsPod() {
   return (std::is_trivial<T>::value && std::is_standard_layout<T>::value) &&
-         (std::is_class<T>::value);
+         (!std::is_class<T>::value);
 }
 
 template <typename T>
@@ -90,8 +90,7 @@ constexpr bool IsString() {
 }
 template <typename T>
 constexpr bool IsClass() {
-  return std::is_class<T>::value &&
-         !(std::is_same<T, std::string>::value || IsPod<T>());
+  return std::is_class<T>::value && !(std::is_same<T, std::string>::value);
 }
 
 template <typename T>
@@ -117,8 +116,8 @@ struct ConverterToLisp {
   auto operator()(CppT cpp_value) {
     if constexpr (detail::IsFundamental<CppT>()) {
       return cpp_value;
-    } else if constexpr (detail::IsPod<CppT>()) {
-      return cpp_value;
+      // } else if constexpr (detail::IsPod<CppT>()) {
+      //   return cpp_value;
     } else if constexpr (detail::IsString<CppT>()) {
       auto str = new char[cpp_value.size() + 1];
       std::copy(cpp_value.c_str(), cpp_value.c_str() + cpp_value.size() + 1,
@@ -155,8 +154,8 @@ struct ConverterToCpp {
   auto operator()(LispT lisp_value) {
     if constexpr (detail::IsFundamental<CppT>()) {
       return lisp_value;
-    } else if constexpr (detail::IsPod<CppT>()) {
-      return lisp_value;
+      // } else if constexpr (detail::IsPod<CppT>()) {
+      //   return lisp_value;
     } else if constexpr (detail::IsString<CppT>()) {
       return std::string(lisp_value);
     } else if constexpr (detail::IsClass<CppT>()) {
