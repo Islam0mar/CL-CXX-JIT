@@ -9,7 +9,6 @@
 (in-package :cxx-jit/test/system)
 
 (defsystem :cxx-jit-test
-  :defsystem-depends-on (:rove-asdf)
   :author "Islam Omar"
   :license "MIT"
   :depends-on (:cxx-jit

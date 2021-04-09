@@ -1,8 +1,8 @@
-(defpackage cxx/test
+(defpackage cxx-jit/test
   (:use :cl
         :rove
         ))
-(in-package :cxx/test)
+(in-package :cxx-jit/test)
 
 (deftest example-test
   (from '("<string>") 'import '("[](std::string x){return \"Hi, \"+x;}" . "hi"))
