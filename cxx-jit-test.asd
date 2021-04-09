@@ -15,7 +15,7 @@
                :rove)
   :components ((:module "tests"
                 :components
-                ((:test-file "functions-test"))))
+                ((:file "functions-test"))))
   :description "Test system for cxx-jit"
 
   :perform (test-op :after (op c)
