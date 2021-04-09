@@ -7,7 +7,18 @@ This library provides an interface to C++ from lisp. It compiles C++ code, then 
 =(from '("list of string headers") 'import "normal string is inseted as it is" '("function/function-pointer/mem-fun-pointer/lambda" . "name-used-in-lisp"))=
 
 ** Examples
-Start with =(ql:quickload :cxx-jit) (in-package cxx-jit)=
+ - Start with =(ql:quickload :cxx-jit) (in-package cxx-jit)=
+ - the following variables should be set according to OS and compiler used
+|------------------------------------+----------------------------------------------------------------------------|
+| variable                           | default value                                                              |
+| =*cxx-compiler-executable-path*=   | ="/usr/bin/g++"=                                                           |
+| =*cxx-compiler-flags*=             | ="-std=c++17 -Wall -Wextra -I/usr/include/eigen3"=                         |
+| =*cxx-compiler-working-directory*= | ="/tmp/" #\/ '/' should be the last character=                             |
+| =+cxx-compiler-lib-name+=          | ="plugin"=                                                                 |
+| =+cxx-compiler-wrap-cxx-path+=     | shouldn't be changed =path to wrap-cxx.cpp=                                |
+| =*cxx-compiler-internal-flags*=    | ="-shared -fPIC -Wl,--no-undefined -Wl,--no-allow-shlib-undefined"=        |
+|                                    | for g++ and for clang++ ="-shared -fPIC -undefined error -flat_namespace"= |
+|------------------------------------+----------------------------------------------------------------------------|
 *** Basic Example
 #+begin_src lisp
   (from '("<string>") 'import '("[](std::string x){return \"Hi, \"+x;}" . "hi"))
