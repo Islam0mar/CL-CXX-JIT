@@ -39,7 +39,7 @@ This library provides an interface to C++ from lisp. It compiles C++ code, then 
  - working C++17 compiler
 
 ** Installation
-Clone into home/common-lisp directory. Then [[asdf:test-system :cxx-jit]]
+Clone into home/common-lisp directory. Then =(asdf:test-system :cxx-jit)=
 
 ** Supported Types
 |------------------+------------------|
@@ -57,11 +57,11 @@ Clone into home/common-lisp directory. Then [[asdf:test-system :cxx-jit]]
     #+begin_src lisp
      Import([&]() { return __VA_ARGS__; });
      #+end_src
- 2. [[Import]] function calls [[DecayThenResolve]] with function pointer as the template specialization so thunk pointer is omitted and we only return the direct function pointer which will be used from lisp side.
- 3. [[InvocableTypeName]] returns a vector contains: [return type, class type for class function member, args]. It resolves C++ types as follows:
+ 2. =Import= function calls =DecayThenResolve= with function pointer as the template specialization so thunk pointer is omitted and we only return the direct function pointer which will be used from lisp side.
+ 3. =InvocableTypeName= returns a vector contains: [return type, class type for class function member, args]. It resolves C++ types as follows:
     + Fundamental types and pointers are passed directly
-    + String is converted to char* with new[] operator, should be cleared with [[ClCxxDeleteObject(ptr, true)]]
-    + Class/std::is_function is converted to void* with new[] operator, should be cleared with [[ClCxxDeleteObject(ptr, false)]]
+    + String is converted to char* with new[] operator, should be cleared with =ClCxxDeleteObject(ptr, true)=
+    + Class/std::is_function is converted to void* with new[] operator, should be cleared with =ClCxxDeleteObject(ptr, false)=
     + rest report an issue for other cases
  4. Meta data for each function defined is passed through a lisp callback with this data:
     #+begin_src C++
@@ -79,6 +79,7 @@ Tested on:
  - SBCL 2.0.1 on debian
 
 ** Todo List
+*** TODO Use trivial-garbage with =ClCxxDeleteObject=
 *** TODO Test functions
 *** TODO Benchmark
 *** TODO Better class interface

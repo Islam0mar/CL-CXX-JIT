@@ -1,4 +1,4 @@
-(cl:defpackage :cxx
+(cl:defpackage :cxx-jit
   (:use :cl :cffi :uiop :trivial-garbage)
   ;; Basic types and constructors.
   (:export
@@ -13,5 +13,5 @@
    #:*cxx-compiler-packages-number*
    #:lisp-error
    #:reg-data
-   #:try-get-cxx-compiler-output 
+   #:try-get-cxx-compiler-output
    #:from))

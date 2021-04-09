@@ -1,4 +1,4 @@
-(in-package :cxx)
+(in-package :cxx-jit)
 
 (defparameter *cxx-compiler-executable-path* "/usr/bin/g++")
 (defparameter *cxx-compiler-flags* "-std=c++17 -Wall -Wextra -I/usr/include/eigen3")
