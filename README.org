@@ -53,17 +53,17 @@ Clone into home/common-lisp directory. Then =(asdf:test-system :cxx-jit)=
 |------------------+------------------|
 
 ** Under The Hood
- 1. function/lambda/member_function/function_pointer is wrapped into a dummy lambda class to have a unique template specialization.
-    #+begin_src lisp
-     Import([&]() { return __VA_ARGS__; });
-     #+end_src
- 2. =Import= function calls =DecayThenResolve= with function pointer as the template specialization so thunk pointer is omitted and we only return the direct function pointer which will be used from lisp side.
- 3. =InvocableTypeName= returns a vector contains: [return type, class type for class function member, args]. It resolves C++ types as follows:
-    + Fundamental types and pointers are passed directly
-    + String is converted to char* with new[] operator, should be cleared with =ClCxxDeleteObject(ptr, true)=
-    + Class/std::is_function is converted to void* with new[] operator, should be cleared with =ClCxxDeleteObject(ptr, false)=
-    + rest report an issue for other cases
- 4. Meta data for each function defined is passed through a lisp callback with this data:
+ + function/lambda/member_function/function_pointer is wrapped into a dummy lambda class to have a unique template specialization.
+     #+begin_src C++ 
+       Import([&]() { return __VA_ARGS__; });
+      #+end_src
+ + =Import= function calls =DecayThenResolve= with function pointer as the template specialization so thunk pointer is omitted and we only return the direct function pointer which will be used from lisp side.
+ + =InvocableTypeName= returns a vector contains: [return type, class type for class function member, args]. It resolves C++ types as follows:
+   * Fundamental types and pointers are passed directly
+   * String is converted to char* with new[] operator, should be cleared with =ClCxxDeleteObject(ptr, true)=
+   * Class/std::is_function is converted to void* with new[] operator, should be cleared with =ClCxxDeleteObject(ptr, false)=
+   * rest report an issue for other cases
+ + Meta data for each function defined is passed through a lisp callback with this data:
     #+begin_src C++
 typedef struct {
   // could be void*
@@ -72,7 +72,7 @@ typedef struct {
   const char **type;  // memory handled in C++
   std::uint8_t type_size;
 } MetaData;
-    #+end_src
+#+end_src
 
 ** NOTE
 Tested on:
