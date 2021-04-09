@@ -7,21 +7,44 @@ This library provides an interface to C++ from lisp. It compiles C++ code, then 
 =(from '("list of string headers") 'import "normal string is inserted as it is" '("function/function-pointer/mem-fun-pointer/lambda" . "name-used-in-lisp"))=
 
 ** Examples
-   [[sdl2.gif]]
- - Start with =(ql:quickload :cxx-jit) (in-package cxx-jit)=
- - the following variables should be set according to OS and compiler used
-|------------------------------------+----------------------------------------------------------------------------|
-| variable                           | default value                                                              |
-|------------------------------------+----------------------------------------------------------------------------|
-| =*cxx-compiler-executable-path*=   | "~/usr/bin/g++~"                                                           |
-| =*cxx-compiler-flags*=             | "~-std=c++17 -Wall -Wextra -I/usr/include/eigen3~"                         |
-| =*cxx-compiler-working-directory*= | "~/tmp/~" #\/ '/' should be the last character                             |
-| =+cxx-compiler-lib-name+=          | "~plugin~"                                                                 |
-| =+cxx-compiler-wrap-cxx-path+=     | shouldn't be changed "~path to wrap-cxx.cpp~"                              |
-| =*cxx-compiler-internal-flags*=    | "~-shared -fPIC -Wl,--no-undefined -Wl,--no-allow-shlib-undefined~"        |
-|                                    | for g++ and for clang++ "~-shared -fPIC -undefined error -flat_namespace~" |
-|------------------------------------+----------------------------------------------------------------------------|
+*** SDL2 Example
+[[sdl2.gif]]
+#+begin_src lisp
+(ql:quickload :cxx-jit)
+(setf cxx-jit:*cxx-compiler-link-libs* "-lGL -lSDL2 -lSDL2main")
+
+(cxx-jit:from '(
+                "<SDL2/SDL.h>")
+              'import
+              '("[](){return SDL_Init(SDL_Init(SDL_INIT_VIDEO));}" . "init")
+              '("SDL_CreateWindow" . "create-window")
+              '("SDL_CreateRenderer" . "create-renderer")
+              '("SDL_SetRenderDrawColor" . "set-color")
+              '("SDL_DestroyWindow" . "destroy-window")
+              '("SDL_RenderClear" . "clear-renderer")
+              '("SDL_RenderPresent" . "renderer-render")
+              '("SDL_Quit" . "sdl-quit"))
+
+(init)
+(setf wind (create-window "create-window" 0 0 600 700 0))
+(setf rend (create-renderer wind -1 0))
+(loop for x to (* 255 3)
+      for r = (if (> x 255) 255 x)
+      for g = (if (> x 255) (if (> x (* 2 255)) 255 (rem x 256)) 0)
+      for b = (if (> x (* 2 255)) (rem x 256) 0)
+      do
+         (print x)
+         (set-color rend r g b 255)
+         (clear-renderer rend)
+         (renderer-render rend)
+         (sleep 0.01))
+
+(destroy-window wind)
+(sdl-quit)
+#+end_src
+
 *** Basic Example
+Start with =(ql:quickload :cxx-jit) (in-package cxx-jit)=
 #+begin_src lisp
   (from '("<string>") 'import '("[](std::string x){return \"Hi, \"+x;}" . "hi"))
   (hi "there!")
@@ -40,6 +63,7 @@ This library provides an interface to C++ from lisp. It compiles C++ code, then 
 #+end_src
 
 *** Eigen Library Example
+Start with =(ql:quickload :cxx-jit) (in-package cxx-jit)=
 #+begin_src lisp
      (from '("<Eigen/Core>" "<Eigen/Core>") 'import '("[](Eigen::CwiseNullaryOp<Eigen::internal::scalar_identity_op<double>,Eigen::Matrix<double, 3, 3>> x){std::stringstream s;
          s << x;
@@ -53,6 +77,18 @@ This library provides an interface to C++ from lisp. It compiles C++ code, then 
 ** Prerequisites
  - common lisp supporting [[https://www.common-lisp.net/project/cffi/][CFFI]]
  - working C++17 compiler
+ - the following variables should be set according to OS and compiler used
+|------------------------------------+----------------------------------------------------------------------------|
+| variable                           | default value                                                              |
+|------------------------------------+----------------------------------------------------------------------------|
+| =*cxx-compiler-executable-path*=   | "~/usr/bin/g++~"                                                           |
+| =*cxx-compiler-flags*=             | "~-std=c++17 -Wall -Wextra -I/usr/include/eigen3~"                         |
+| =*cxx-compiler-working-directory*= | "~/tmp/~" #\/ '/' should be the last character                             |
+| =+cxx-compiler-lib-name+=          | "~plugin~"                                                                 |
+| =+cxx-compiler-wrap-cxx-path+=     | shouldn't be changed "~path to wrap-cxx.cpp~"                              |
+| =*cxx-compiler-internal-flags*=    | "~-shared -fPIC -Wl,--no-undefined -Wl,--no-allow-shlib-undefined~"        |
+|                                    | for g++ and for clang++ "~-shared -fPIC -undefined error -flat_namespace~" |
+|------------------------------------+----------------------------------------------------------------------------|
 
 ** Installation
 Clone into home/common-lisp directory. Then =(ql:quickload :cxx-jit-test)=
