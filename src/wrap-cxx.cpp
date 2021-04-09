@@ -72,16 +72,10 @@ constexpr bool IsFunction() {
   return std::is_function<
       std::remove_pointer_t<std::remove_reference_t<T>>>::value;
 }
-template <typename T>
-constexpr bool IsPod() {
-  return (std::is_trivial<T>::value && std::is_standard_layout<T>::value) &&
-         (!std::is_class<T>::value);
-}
 
 template <typename T>
 constexpr bool IsFundamental() {
-  return std::is_fundamental<T>::value ||
-         (std::is_array<T>::value && IsPod<T>()) || std::is_pointer<T>::value;
+  return std::is_fundamental<T>::value || std::is_pointer<T>::value;
 }
 template <typename T>
 constexpr bool IsString() {
@@ -178,29 +172,29 @@ template <typename T, typename... V>
 constexpr auto TypeName(std::vector<std::string> *vec);
 
 namespace detail {
-template <auto invokable_pointer, typename R, typename... Args>
+template <auto invocable_pointer, typename R, typename... Args>
 typename ConverterToLisp<std::decay_t<R>>::type DoApply(
     typename ConverterToLisp<std::decay_t<Args>>::type... args) {
   try {
     if constexpr (std::is_invocable_v<
-                      decltype(invokable_pointer),
-                      typename ConverterToLisp<std::decay_t<Args>>::type...>) {
+                      decltype(invocable_pointer),
+                      typename ConverterToCpp<std::decay_t<Args>>::type...>) {
       if constexpr (std::is_same_v<
-                        typename ConverterToLisp<std::decay_t<R>>::type,
-                        void>) {
+                        typename ConverterToCpp<std::decay_t<R>>::type, void>) {
+        std::invoke(invocable_pointer, ConvertToCpp<Args>(args)...);
         return;
       } else {
         return ConvertToLisp(
-            std::invoke(invokable_pointer, ConvertToCpp<Args>(args)...));
+            std::invoke(invocable_pointer, ConvertToCpp<Args>(args)...));
       }
     } else {
       if constexpr (std::is_same_v<
-                        typename ConverterToLisp<std::decay_t<R>>::type,
-                        void>) {
+                        typename ConverterToCpp<std::decay_t<R>>::type, void>) {
+        std::invoke(*invocable_pointer, ConvertToCpp<Args>(args)...);
         return;
       } else {
         return ConvertToLisp(
-            std::invoke(*invokable_pointer, ConvertToCpp<Args>(args)...));
+            std::invoke(*invocable_pointer, ConvertToCpp<Args>(args)...));
       }
     }
   } catch (const std::exception &err) {
@@ -228,7 +222,7 @@ constexpr auto ResolveInvocable(R (CT::*p)(Args...)) {
 template <auto mem_func_ptr, typename R, typename CT, typename... Args>
 constexpr auto ResolveInvocable(R (CT::*p)(Args...) const) {
   (void)p;
-  return &DoApply<mem_func_ptr, R, CT, Args...>;
+  return &DoApply<mem_func_ptr, R, const CT, Args...>;
 }
 template <typename LambdaT, LambdaT *lambda_ptr, typename R, typename... Args>
 constexpr auto ResolveInvocableLambda(R (LambdaT::*p)(Args...) const) {
@@ -266,45 +260,45 @@ static inline void GetTypeName(std::vector<std::string> *vec) {
   vec->emplace_back(type_name);
 }
 template <typename R, typename... Args>
-struct InvokableTypeName {};
+struct InvocableTypeName {};
 
 template <typename LambdaT>
-struct InvokableTypeName<LambdaT> {
+struct InvocableTypeName<LambdaT> {
   void operator()(std::vector<std::string> *vec) {
-    InvokableTypeName<decltype(&LambdaT::operator())>()(vec);
+    InvocableTypeName<decltype(&LambdaT::operator())>()(vec);
   }
 };
 
 template <typename R, typename... Args>
-struct InvokableTypeName<R(Args...)> {
+struct InvocableTypeName<R(Args...)> {
   void operator()(std::vector<std::string> *vec) { TypeName<R, Args...>(vec); }
 };
 
 template <typename R, typename... Args>
-struct InvokableTypeName<R (*)(Args...)> {
+struct InvocableTypeName<R (*)(Args...)> {
   void operator()(std::vector<std::string> *vec) { TypeName<R, Args...>(vec); }
 };
 
 template <typename R, typename CT, typename... Args>
-struct InvokableTypeName<R (CT::*)(Args...)> {
+struct InvocableTypeName<R (CT::*)(Args...)> {
   void operator()(std::vector<std::string> *vec) { TypeName<R, Args...>(vec); }
 };
 
 template <typename R, typename CT, typename... Args>
-struct InvokableTypeName<R (CT::*)(Args...) const> {
+struct InvocableTypeName<R (CT::*)(Args...) const> {
   void operator()(std::vector<std::string> *vec) { TypeName<R, Args...>(vec); }
 };
 template <typename T>
-struct InvokableTypeName<std::function<T>> {
+struct InvocableTypeName<std::function<T>> {
   void operator()(std::vector<std::string> *vec) {
-    InvokableTypeName<T>()(vec);
+    InvocableTypeName<T>()(vec);
   }
 };
 }  // namespace detail
 
 template <typename T>
-auto InvokableTypeName(T lambda, std::vector<std::string> *vec) {
-  return detail::InvokableTypeName<decltype(lambda())>()(vec);
+auto InvocableTypeName(T lambda, std::vector<std::string> *vec) {
+  return detail::InvocableTypeName<decltype(lambda())>()(vec);
 }
 
 template <typename T_, typename... V>
@@ -395,7 +389,7 @@ inline void SendMetaData(void *md) {
   do {                                                            \
     md.thunk_ptr = reinterpret_cast<void (*)()>(                  \
         cl_cxx::Import([&]() { return __VA_ARGS__; }));           \
-    cl_cxx::InvokableTypeName([&]() { return __VA_ARGS__; }, &v); \
+    cl_cxx::InvocableTypeName([&]() { return __VA_ARGS__; }, &v); \
     for (const auto &i : v) {                                     \
       c_v.emplace_back(i.c_str());                                \
     }                                                             \
@@ -407,7 +401,7 @@ inline void SendMetaData(void *md) {
     c_v.clear();                                                  \
   } while (false)
 // #define IMPORT(x) cl_cxx::Import([&]() { return x; })
-// #define IVOKABLE_TYPE_NAME(x, v) cl_cxx::InvokableTypeName([&]() { return x;
+// #define IVOKABLE_TYPE_NAME(x, v) cl_cxx::InvocableTypeName([&]() { return x;
 // }, v)
 
 extern "C" {

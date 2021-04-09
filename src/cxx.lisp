@@ -5,7 +5,7 @@
 ;;; #\/ '/' should be the last char
 (defparameter *cxx-compiler-working-directory* "/tmp/")
 (defconstant +cxx-compiler-lib-name+ "plugin")
-(defconstant +cxx-compiler-wrap-cxx-path+ (uiop:merge-pathnames* "../wrap-cxx.cpp"))
+(defconstant +cxx-compiler-wrap-cxx-path+ (uiop:merge-pathnames* "./wrap-cxx.cpp"))
 ;;; TODO: detect compiler then set flags #+#.
 ;;;              ,but don't how to handle changing cxx-compiler-exe path
 ;;; FIXME: change to "-undefined error -flat_namespace" for clang++
@@ -40,7 +40,7 @@
   "Returns cffi-type as a keyword"
   (declare (type string type))
   (cond
-    ((string-equal "char*" type) :string)
+    ((string-equal "const char*" type) :string)
     ((eq #\* (elt type (1- (length type)))) :pointer)
     ((string-equal "void" type) :void)
     ((string-equal "char" type) :char)
@@ -54,31 +54,41 @@
     ((string-equal "long long" type) :llong)
     ((string-equal "unsigned long" type) :ulong)
     ((string-equal "int" type) :int)
-    (t nil)))
+    (t (print type) :void)))
+
+(defun parse-input-args (arg-types)
+  "return argument types (with variables if they are inputs) in a proper list"
+  (if arg-types (loop
+                  for i in arg-types
+                  for sym in (symbols-list arg-types)
+                  as type = (cffi-type i) then (cffi-type i)
+                  append
+                  `(,type ,sym))))
 
 ;; void send_data(MetaData *M, uint8_t n)
 (cffi:defcallback reg-data :void ((meta-ptr :pointer))
   (cffi:with-foreign-slots ((func-ptr method-p arg-types types-size) meta-ptr (:struct meta-data))
     (let ((name (pop *cxx--fun-names*))
           (args (loop for i below types-size
-                      collect (cffi:mem-ref arg-types :string i))))
-      (print `(progn
-         ;; don't export functions starting with '%'
-         ,(if (equal #\% (char name 0))
-              nil
-              `(export ',(read-from-string name)))
-         (defun
-             ,(read-from-string name) ,(symbols-list (cdr args) method-p)
-           ;; TODO: add declare type
-           (cffi:foreign-funcall-pointer
-            ,func-ptr
-            nil
-            ,@(append
-               (if method-p
-                   ;; cxx-ptr defined in defclass
-                   (append '(:pointer obj) (mapcar #'cffi-type (cdr args)))
-                   (mapcar #'cffi-type (cdr args)))
-               (list (cffi-type (car args)))))))))))
+                      collect (cffi:mem-aref arg-types :string i))))
+      (print args)
+      (eval `(progn
+               ;; don't export functions starting with '%'
+               ,(if (equal #\% (char name 0))
+                    nil
+                    `(export ',(read-from-string name)))
+               (defun
+                   ,(read-from-string name) ,(symbols-list (cdr args) method-p)
+                 ;; TODO: add declare type
+                 (cffi:foreign-funcall-pointer
+                  ,func-ptr
+                  nil
+                  ,@(append
+                     (if method-p
+                         ;; cxx-ptr defined in defclass
+                         (append '(:pointer obj) (parse-input-args (cdr args)))
+                         (parse-input-args (cdr args)))
+                     (list (cffi-type (car args)))))))))))
 
 (defun compile-code (code)
   "compile aync. code string with cxx compiler"
