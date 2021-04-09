@@ -133,6 +133,7 @@ Tested on:
 
 ** Todo List
 *** TODO Use trivial-garbage with =ClCxxDeleteObject=
+*** TODO Add non-polling =from=
 *** TODO Test functions
 *** TODO Benchmark
 *** TODO Better class interface
