@@ -18,6 +18,4 @@
                 ((:file "functions-test"))))
   :description "Test system for cxx-jit"
 
-  :perform (test-op :after (op c)
-                    (funcall (intern #.(string :run-test-system) :prove)
-c)))
+  :perform (test-op (op c) (symbol-call :rove '#:run c)))
