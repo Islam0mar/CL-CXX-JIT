@@ -39,7 +39,7 @@ This library provides an interface to C++ from lisp. It compiles C++ code, then 
  - working C++17 compiler
 
 ** Installation
-Clone into home/common-lisp directory. Then =(asdf:test-system :cxx-jit)=
+Clone into home/common-lisp directory. Then =(ql:quickload :cxx-jit-test)=
 
 ** Supported Types
 |------------------+------------------|

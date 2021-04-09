@@ -4,7 +4,7 @@
 |#
 
 (defpackage :cxx-jit/test/system
-  (:use :cl :asdf))
+  (:use :cl :asdf :uiop))
 
 (in-package :cxx-jit/test/system)
 
