@@ -7,6 +7,7 @@ This library provides an interface to C++ from lisp. It compiles C++ code, then 
 =(from '("list of string headers") 'import "normal string is inserted as it is" '("function/function-pointer/mem-fun-pointer/lambda" . "name-used-in-lisp"))=
 
 ** Examples
+   [[sdl2.gif]]
  - Start with =(ql:quickload :cxx-jit) (in-package cxx-jit)=
  - the following variables should be set according to OS and compiler used
 |------------------------------------+----------------------------------------------------------------------------|

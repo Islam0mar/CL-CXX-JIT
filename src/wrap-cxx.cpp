@@ -161,6 +161,10 @@ struct ConverterToCpp {
     }
   }
 };
+template <>
+struct ConverterToCpp<void> {
+  typedef void type;
+};
 
 template <typename CppT, typename LispT>
 auto ConvertToCpp(LispT lisp_value) {

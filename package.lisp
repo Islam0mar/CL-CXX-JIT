@@ -8,6 +8,7 @@
    #:+cxx-compiler-lib-name+
    #:+cxx-compiler-wrap-cxx-path+
    #:*cxx-compiler-internal-flags*
+   #:*cxx-compiler-link-libs*
    #:*cxx-compiler-process*
    #:*cxx-compiler-packages*
    #:*cxx-compiler-packages-number*

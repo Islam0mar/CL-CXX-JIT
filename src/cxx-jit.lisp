@@ -10,6 +10,7 @@
 ;;;              ,but don't how to handle changing cxx-compiler-exe path
 ;;; FIXME: change to "-undefined error -flat_namespace" for clang++
 (defparameter *cxx-compiler-internal-flags* "-shared -fPIC -Wl,--no-undefined -Wl,--no-allow-shlib-undefined")
+(defparameter *cxx-compiler-link-libs* "-lmath")
 ;;; async process value
 (defparameter *cxx-compiler-process* nil)
 ;;; list of libs compiled
@@ -105,7 +106,8 @@
                           ;;*cxx-compiler-output-path*
                           ;;" "
                           *cxx-compiler-working-directory* +cxx-compiler-lib-name+ ".cpp -o "
-                          *cxx-compiler-working-directory* +cxx-compiler-lib-name+ ".so")))
+                          *cxx-compiler-working-directory* +cxx-compiler-lib-name+ ".so "
+                          *cxx-compiler-link-libs*)))
 
     ;; create cxx file and insert code into it
     (with-open-file (cxx-source-code-file (concatenate
@@ -118,6 +120,7 @@
                                           :if-does-not-exist :create)
       (format cxx-source-code-file "~A" code))
     ;; compile cxx file
+    (print cmd)
     (setf *cxx-compiler-process*
           (uiop:launch-program cmd :output :stream
                                    :error-output :stream))))
