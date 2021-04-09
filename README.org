@@ -1,129 +1,92 @@
-# CL-CXX - Common Lisp wrappers for C++
+#+OPTIONS: toc:3          (only include two levels in TOC)
+* CL-CXX-JIT - Common Lisp C++ JIT for exposing C++ functions
 
-This library provides an interface to C++ from lisp. It was inspired by Julia's [libcxxwrap](https://github.com/JuliaInterop/libcxxwrap-julia), and that projects documentation is a good reference for the architecture and ideas in this library.
+This library provides an interface to C++ from lisp. It compiles C++ code, then loads it into lisp. It was inspired by [[https://github.com/onqtam/rcrl][RCRL]] and the older project [[https://github.com/Islam0mar/cl-cxx][CL-CXX]].
 
-## Prerequisites
+** Examples
 
-- [CLCXX](https://github.com/Islam0mar/CLCXX) is installed
+*** Basic Example
+#+begin_src lisp
+  (from '("<string>") 'import '("[](std::string x){return \"Hi, \"+x;}" . "hi"))
+  (hi "there!")
 
-## Installation
+  (from '("<cmath>") 'import '("static_cast<double(*)(double)>(std::sin)" . "cpp-sin"))
+  (cpp-sin 0d0)
+  (cpp-sin pi)
+  (cpp-sin (/ pi 2))
 
-|----------+-----+------|
-| type     | c++ | lisp |
-|----------+-----+------|
-| function | //  | //   |
-|          |     |      |
+  (from nil 'import "struct C{ auto hi(){return \"Hello, World\\n\";} auto bye(){return \"Bye\";} };" '("&C::bye" . "bye") '("&C::hi" . "hi") '("[](){static C x; return x;}" . "cc"))
+  (cc)
+  (hi *)
+  (bye **)
+    ;;; structure  definition could be written in a header file then be used as the following:
+  (from '("c.hpp") 'import '("&C::bye" . "bye") '("&C::hi" . "hi") '("[](){static C x; return x;}" . "cc"))
+#+end_src
 
+*** Eigen Library Example
+#+begin_src lisp
+     (from '("<Eigen/Core>" "<Eigen/Core>") 'import '("[](Eigen::CwiseNullaryOp<Eigen::internal::scalar_identity_op<double>,Eigen::Matrix<double, 3, 3>> x){std::stringstream s;
+         s << x;
+         return s.str();}" . "print-matrix"))
 
+    (from '("<Eigen/Core>" "<Eigen/Core>") 'import '("static_cast<const Eigen::CwiseNullaryOp<Eigen::internal::scalar_identity_op<double>,Eigen::Matrix<double, 3, 3>> (*)()> (&Eigen::Matrix3d::Identity)" . "identity-matrix"))
 
+(print-matrix (identity-matrix))
+#+end_src
 
+** Prerequisites
+ - common lisp supporting [[https://www.common-lisp.net/project/cffi/][CFFI]]
+ - working C++17 compiler
 
-| type | c++ |
-|      |     |
+** Installation
+Clone into home/common-lisp directory. Then [[asdf:test-system :cxx-jit]]
 
-Clone into home/common-lisp directory. Then `asdf:test-system "cxx"`
+** Supported Types
+|------------------+------------------|
+| C++ type         | Lisp cffi type   |
+|------------------+------------------|
+| fundamental      | same             |
+| string           | :string          |
+| class            | :pointer         |
+| std::is_function | :pointer         |
+| other            | not implemented! |
+|------------------+------------------|
 
-## Supported Types
+** Under The Hood
+ 1. function/lambda/member_function/function_pointer is wrapped into a dummy lambda class to have a unique template specialization.
+    #+begin_src lisp
+     Import([&]() { return __VA_ARGS__; });
+     #+end_src
+ 2. [[Import]] function calls [[DecayThenResolve]] with function pointer as the template specialization so thunk pointer is omitted and we only return the direct function pointer which will be used from lisp side.
+ 3. [[InvocableTypeName]] returns a vector contains: [return type, class type for class function member, args]. It resolves C++ types as follows:
+    + Fundamental types and pointers are passed directly
+    + String is converted to char* with new[] operator, should be cleared with [[ClCxxDeleteObject(ptr, true)]]
+    + Class/std::is_function is converted to void* with new[] operator, should be cleared with [[ClCxxDeleteObject(ptr, false)]]
+    + rest report an issue for other cases
+ 4. Meta data for each function defined is passed through a lisp callback with this data:
+    #+begin_src C++
+typedef struct {
+  // could be void*
+  void (*thunk_ptr)();
+  bool method_p;
+  const char **type;  // memory handled in C++
+  std::uint8_t type_size;
+} MetaData;
+    #+end_src
 
-* Fundamental types
-* Pointers
-* Classes can add public members and functions
-* POD
-* functions, std::function and lambda
-
-## A Small Example
-First you will need to create a C++ glue library that CFF will use when calling C++ functions from Lisp. Compile the code below as a shared library say, libtest.so or libtest.dylib. The commands to do this will vary by compiler and operating system. For testing, it is always good to put the library in the same directory as the lisp code, and ensure that you set the current working directory in your Lisp image. CFFI can take some fiddling to find all the dependencies. This is not unique to this project, all Lisp C/C++ bindings with CFFI have the same requirements.
-
-### The C++ Side of the Equation
-```c++
-#include <string>
-#include "clcxx/clcxx.hpp"
-
-std::string greet() { return "Hello, World"; }
-int Int(int x) { return x + 100; }
-float Float(float y) { return y + 100.34; }
-auto gr(std::complex<float> x) { return x; }
-std::string hi(char* s) { return std::string("hi, " + std::string(s)); }
-void ref_int(int& x) { x += 30; }
-void ref_class(xx& x) { x.y = 1000000; }
-class xx {
- public:
-  xx(int xx, int yy) : y(yy), x(xx) {}
-  std::string greet() { return "Hello, World"; }
-  int y;
-  int x;
-};
-
-CLCXX_PACKAGE TEST(clcxx::Package& pack) {
-  pack.defun("hi", &hi);
-  pack.defun("test-int", &Int);
-  pack.defun("greet", &greet);
-  pack.defun("test-float", &Float);
-  pack.defun("test-complex", &gr);
-  pack.defun("ref-int", &ref_int);
-  pack.defun("ref-class", &ref_class);
-  pack.defclass<xx, false>("xx")
-      .member("y", &xx::y)
-      .defmethod("foo", &xx::greet)
-      .constructor<int, int>();
-}
-```
-
-### The Lisp Side of Things
-You should walk through the commands below in the REPL to get an idea of how the bindings work. Before you start, ensure you have the dependencies loaded:
-
-```common lisp
-(ql:quickload "cffi")
-(ql:quickload "cxx")
-```
-
-```common lisp
-(defpackage cxx/test
-  (:use :cl))
-(in-package :cxx/test)
-
-;;; Change the pathname to match that of your system.
-(pushnew (merge-pathnames #p"ros/lisp-demo/lib/" (user-homedir-pathname))
-         cffi:*foreign-library-directories*
-         :test #'equal)
-
-(cffi:define-foreign-library my-lib
-  (t (:default "libtest")))
-
-(cffi:use-foreign-library my-lib)
-
-(cxx:init)
-
-(cxx:add-package "TEST" "TEST")
-
-(test:greet)
-
-(test:hi "Cxx")
-```
-
-## Usage
-
-See test files or the [cl-cxx-eigen](https://github.com/Islam0mar/cl-cxx-eigen) project for further examples.
-
-### NOTE
-
+** NOTE
 Tested on:
-* SBCL 1.4.5 on debian
-* CCL  1.12  on MacOS 10.13.6
+ - SBCL 2.0.1 on debian
 
-## TODO
+** Todo List
+*** TODO Test functions
+*** TODO Benchmark
+*** TODO Better class interface
 
-- [x] test functions
-- [x] classes
-- [x] references
-- [ ] Smart pointers
-- [ ] Tuple
-- [ ] benchmark
-
-## Copyright
+** Copyright
 
 Copyright (c) 2021 Islam Omar (io1131@fayoum.edu.eg)
 
-## License
+** License
 
 Licensed under the MIT License.

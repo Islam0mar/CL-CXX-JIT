@@ -84,7 +84,7 @@ constexpr bool IsString() {
 }
 template <typename T>
 constexpr bool IsClass() {
-  return std::is_class<T>::value && !(std::is_same<T, std::string>::value);
+  return std::is_class<T>::value && !(IsString<T>());
 }
 
 template <typename T>
@@ -117,9 +117,8 @@ struct ConverterToLisp {
       std::copy(cpp_value.c_str(), cpp_value.c_str() + cpp_value.size() + 1,
                 str);
       return str;
-    } else if constexpr (detail::IsFunction<CppT>()) {
-      return cpp_value;
-    } else if constexpr (detail::IsClass<CppT>()) {
+    } else if constexpr (detail::IsClass<CppT>() ||
+                         detail::IsFunction<CppT>()) {
       // for consistency with string
       auto obj_ptr = new std::any[1]{cpp_value};
       return static_cast<void *>(obj_ptr);
@@ -152,7 +151,8 @@ struct ConverterToCpp {
       //   return lisp_value;
     } else if constexpr (detail::IsString<CppT>()) {
       return std::string(lisp_value);
-    } else if constexpr (detail::IsClass<CppT>()) {
+    } else if constexpr (detail::IsClass<CppT>() ||
+                         detail::IsFunction<CppT>()) {
       auto obj_any = *(static_cast<std::any *>(lisp_value));
       return std::any_cast<CppT>(obj_any);
     } else {

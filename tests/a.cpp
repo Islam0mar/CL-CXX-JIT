@@ -80,7 +80,7 @@ constexpr bool IsFunction() {
 template <typename T>
 constexpr bool IsPod() {
   return (std::is_trivial<T>::value && std::is_standard_layout<T>::value) &&
-         (std::is_class<T>::value);
+         (!std::is_class<T>::value);
 }
 
 template <typename T>
@@ -95,8 +95,7 @@ constexpr bool IsString() {
 }
 template <typename T>
 constexpr bool IsClass() {
-  return std::is_class<T>::value &&
-         !(std::is_same<T, std::string>::value || IsPod<T>());
+  return std::is_class<T>::value && !(std::is_same<T, std::string>::value);
 }
 
 template <typename T>
@@ -450,15 +449,24 @@ template <typename T>
 int fdsdfs(T x, char w);
 
 auto f() { return (1 + 4); }
-class C {
- public:
-  int x;
-
+struct D {
   auto hi() { return "Hi\n"; }
+};
+
+#include <iostream>
+#include <type_traits>
+
+struct A {
+  int m;
+};
+
+struct B {
+  B() {}
 };
 
 int main() {
   auto x = std::string();
+  std::cout << std::boolalpha;
   // TypeName<std::string>();
   // TypeName<fdsdfs<double>>();
   // TypeName<decltype(fdsdfs<char **>)>();
@@ -477,8 +485,8 @@ int main() {
   // cl_cxx::TypeName<decltype(&fdsdfs<cl_cxx::type_name::ProbeType>)>();
   // cl_cxx::TypeName<void>();
   // std::cout << (*wf)("asdas", 's') << std::endl;
-  std::cout << (void *)IMPORT(&C::hi) << std::endl;
-  std::cout << (void *)IMPORT(&C::hi) << std::endl;
+  // std::cout << (void *)IMPORT(&C::hi) << std::endl;
+  // std::cout << (void *)IMPORT(&C::hi) << std::endl;
   std::cout << (void *)IMPORT(fdsdfs<std::string>) << std::endl;
   // std::cout << (void *)IMPORT(Eigen::Matrix3d::Constant) << std::endl;
   // const Eigen::CwiseNullaryOp<Eigen::internal::scalar_identity_op<double>,
@@ -522,9 +530,32 @@ int main() {
   // cl_cxx::GetTypeName<void()>();
   // cl_cxx::GetTypeName<std::string()>();
   std::vector<std::string> v;
-  cl_cxx::detail::InvokableTypeName<char (*)(
-      int32_t, int16_t, int16_t, char *, void *, size_t, unsigned char, int8_t,
-      long long, uint64_t, long)>()(&v);
+  struct C {
+    auto hi() { return "Hi\n"; }
+  };
+  auto fsd = []() {
+    static C x;
+    return x;
+  };
+  auto fsc = []() {
+    static D x;
+    return x;
+  };
+  std::cout << std::is_trivial<A>::value << '\n';
+  std::cout << std::is_trivial<B>::value << '\n';
+  std::cout << cl_cxx::detail::IsPod<C>() << '\n';
+  std::cout << std::is_pod<C>::value << '\n';
+  std::cout << std::is_pod<D>::value << '\n';
+  std::cout << "ssssssss\n";
+  cl_cxx::GetTypeName<typename cl_cxx::ConverterToLisp<C>::type>();
+  cl_cxx::detail::InvokableTypeName<decltype(fsd)>()(&v);
+  cl_cxx::detail::InvokableTypeName<std::string (*)(char *)>()(&v);
+  // cl_cxx::detail::InvokableTypeName<decltype(fsc)>()(&v);
+  // cl_cxx::detail::InvokableTypeName<void(float)>()(&v);
+
+  // cl_cxx::detail::InvokableTypeName<char (*)(
+  //     const char *, int32_t, int16_t, int16_t, char *, void *, size_t,
+  //     unsigned char, int8_t, long long, uint64_t, long)>()(&v);
   // cl_cxx::detail::InvokableTypeName<decltype(&C::hi)>()(&v);
   // v.emplace_back("...\n");
   // cl_cxx::detail::InvokableTypeName<void(float)>()(&v);

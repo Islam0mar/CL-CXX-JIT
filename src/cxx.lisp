@@ -41,6 +41,7 @@
   (declare (type string type))
   (cond
     ((string-equal "const char*" type) :string)
+    ((string-equal "char*" type) :string)
     ((eq #\* (elt type (1- (length type)))) :pointer)
     ((string-equal "void" type) :void)
     ((string-equal "char" type) :char)
@@ -50,11 +51,13 @@
     ((string-equal "int" type) :int)
     ((string-equal "unsigned int" type) :uint)
     ((string-equal "long" type) :long)
-    ((string-equal "unsigned long long" type) :ullong)
-    ((string-equal "long long" type) :llong)
     ((string-equal "unsigned long" type) :ulong)
-    ((string-equal "int" type) :int)
-    (t (print type) :void)))
+    ((string-equal "long long" type) :llong)
+    ((string-equal "unsigned long long" type) :ullong)
+    ((string-equal "float" type) :float)
+    ((string-equal "double" type) :double)
+    ((string-equal "long double" type) :long-double)
+    (t (format t "No Known conversion for type ~S. default to pointer~%" type) :pointer)))
 
 (defun parse-input-args (arg-types)
   "return argument types (with variables if they are inputs) in a proper list"
@@ -65,13 +68,12 @@
                   append
                   `(,type ,sym))))
 
-;; void send_data(MetaData *M, uint8_t n)
+;; void send_data(MetaData *M)
 (cffi:defcallback reg-data :void ((meta-ptr :pointer))
   (cffi:with-foreign-slots ((func-ptr method-p arg-types types-size) meta-ptr (:struct meta-data))
     (let ((name (pop *cxx--fun-names*))
           (args (loop for i below types-size
                       collect (cffi:mem-aref arg-types :string i))))
-      (print args)
       (eval `(progn
                ;; don't export functions starting with '%'
                ,(if (equal #\% (char name 0))

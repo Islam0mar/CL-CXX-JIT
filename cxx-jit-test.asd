@@ -1,14 +1,14 @@
 #|
   This file is a part of lcm project.
-  Copyright (c) 2018 Islam Omar (io1131@fayoum.edu.eg)
+  Copyright (c) 2021 Islam Omar (io1131@fayoum.edu.eg)
 |#
 
-(defpackage :cxx/test/system
+(defpackage :cxx-jit/test/system
   (:use :cl :asdf))
 
-(in-package :cxx/test/system)
+(in-package :cxx-jit/test/system)
 
-(defsystem :cxx-test
+(defsystem :cxx-jit-test
   :defsystem-depends-on (:prove-asdf)
   :author "Islam Omar"
   :license "MIT"
@@ -17,7 +17,7 @@
   :components ((:module "tests"
                 :components
                 ((:test-file "functions-test"))))
-  :description "Test system for cxx"
+  :description "Test system for cxx-jit"
 
   :perform (test-op :after (op c)
                     (funcall (intern #.(string :run-test-system) :prove)

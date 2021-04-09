@@ -1,36 +1,14 @@
 (defpackage cxx/test
   (:use :cl
-        :prove
+        :rove
         ))
 (in-package :cxx/test)
 
-(pushnew (merge-pathnames #p"ros/lisp-demo/lib/" (user-homedir-pathname))
-         cffi:*foreign-library-directories*
-         :test #'equal)
+(deftest example-test
+  (from '("<string>") 'import '("[](std::string x){return \"Hi, \"+x;}" . "hi"))
+  (from '("<cmath>") 'import '("static_cast<double(*)(double)>(std::sin)" . "cpp-sin"))
+  (ok (string= (hi "there!") "Hi, there!"))
+  (ok (= (cpp-sin 0d0) 0d0))
+  (ok (= (cpp-sin (/ pi 2)) 1d0)))
 
-(cffi:define-foreign-library my-lib
-  ;; (:darwin (:or "libbipedal.3.dylib" "libbipedal.dylib"))
-  ;; (:unix (:or "libbipedal.so.3" "libbipedal.so"))
-  (t (:default "libbipedal")))
-
-
-(cffi:use-foreign-library my-lib)
-
-
-(plan 1)
-
-;; start here
-(ok (cxx:init))
-
-(defun test ()
-  (cxx:add-package "TEST" "TEST")
-  (cxx:remove-package "TEST")
-  )
-
-(ok (test))
-
-(cffi:close-foreign-library 'my-lib)
-
-(finalize)
-
-
+(run-suite *package*)
