@@ -9,11 +9,11 @@
 (in-package :cxx-jit/test/system)
 
 (defsystem :cxx-jit-test
-  :defsystem-depends-on (:prove-asdf)
+  :defsystem-depends-on (:rove-asdf)
   :author "Islam Omar"
   :license "MIT"
-  :depends-on (:cxx
-               :prove)
+  :depends-on (:cxx-jit
+               :rove)
   :components ((:module "tests"
                 :components
                 ((:test-file "functions-test"))))
