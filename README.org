@@ -3,8 +3,11 @@
 
 This library provides an interface to C++ from lisp. It compiles C++ code, then loads it into lisp. It was inspired by [[https://github.com/onqtam/rcrl][RCRL]] and the older project [[https://github.com/Islam0mar/cl-cxx][CL-CXX]].
 
-** Examples
+** API
+=(from '("list of string headers") 'import "normal string is inseted as it is" '("function/function-pointer/mem-fun-pointer/lambda" . "name-used-in-lisp"))=
 
+** Examples
+Start with =(ql:quickload :cxx-jit) (in-package cxx-jit)=
 *** Basic Example
 #+begin_src lisp
   (from '("<string>") 'import '("[](std::string x){return \"Hi, \"+x;}" . "hi"))

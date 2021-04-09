@@ -5,7 +5,7 @@
 ;;; #\/ '/' should be the last char
 (defparameter *cxx-compiler-working-directory* "/tmp/")
 (defconstant +cxx-compiler-lib-name+ "plugin")
-(defconstant +cxx-compiler-wrap-cxx-path+ (uiop:merge-pathnames* "./wrap-cxx.cpp"))
+(defconstant +cxx-compiler-wrap-cxx-path+ (uiop:merge-pathnames* "./src/wrap-cxx.cpp" (asdf:system-source-directory :cxx-jit)))
 ;;; TODO: detect compiler then set flags #+#.
 ;;;              ,but don't how to handle changing cxx-compiler-exe path
 ;;; FIXME: change to "-undefined error -flat_namespace" for clang++
