@@ -84,11 +84,11 @@ Start with =(ql:quickload :cxx-jit) (in-package cxx-jit)=
 | =*cxx-compiler-executable-path*=   | "~/usr/bin/g++~"                                                           |
 | =*cxx-compiler-flags*=             | "~-std=c++17 -Wall -Wextra -I/usr/include/eigen3~"                         |
 | =*cxx-compiler-working-directory*= | "~/tmp/~" #\/ '/' should be the last character                             |
-| =+cxx-compiler-lib-name+=          | "~plugin~"                                                                 |
+| =+cxx-compiler-lib-name+=          | (intern "~plugin~")                                                        |
 | =+cxx-compiler-wrap-cxx-path+=     | shouldn't be changed "~path to wrap-cxx.cpp~"                              |
 | =*cxx-compiler-internal-flags*=    | "~-shared -fPIC -Wl,--no-undefined -Wl,--no-allow-shlib-undefined~"        |
 |                                    | for g++ and for clang++ "~-shared -fPIC -undefined error -flat_namespace~" |
-| =*cxx-compiler-link-libs*=         | "~-lmath~" these flags are added after "~-o output~" to link correctly     |
+| =*cxx-compiler-link-libs*=         | "~-lm~" these flags are added after "~-o output~" to link correctly        |
 |------------------------------------+----------------------------------------------------------------------------|
 
 ** Installation

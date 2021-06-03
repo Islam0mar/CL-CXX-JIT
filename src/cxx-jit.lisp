@@ -4,13 +4,13 @@
 (defparameter *cxx-compiler-flags* "-std=c++17 -Wall -Wextra -I/usr/include/eigen3")
 ;;; #\/ '/' should be the last char
 (defparameter *cxx-compiler-working-directory* "/tmp/")
-(defconstant +cxx-compiler-lib-name+ "plugin")
+(defconstant +cxx-compiler-lib-name+ (intern "plugin"))
 (defconstant +cxx-compiler-wrap-cxx-path+ (uiop:merge-pathnames* "./src/wrap-cxx.cpp" (asdf:system-source-directory :cxx-jit)))
 ;;; TODO: detect compiler then set flags #+#.
 ;;;              ,but don't how to handle changing cxx-compiler-exe path
 ;;; FIXME: change to "-undefined error -flat_namespace" for clang++
 (defparameter *cxx-compiler-internal-flags* "-shared -fPIC -Wl,--no-undefined -Wl,--no-allow-shlib-undefined")
-(defparameter *cxx-compiler-link-libs* "-lmath")
+(defparameter *cxx-compiler-link-libs* "-lm")
 ;;; async process value
 (defparameter *cxx-compiler-process* nil)
 ;;; list of libs compiled
@@ -97,23 +97,23 @@
   "compile aync. code string with cxx compiler"
   ;; compiler command
   (let* ((cmd (concatenate 'string
-                          *cxx-compiler-executable-path*
-                          " "
-                          *cxx-compiler-internal-flags*
-                          " "
-                          *cxx-compiler-flags*
-                          " "
-                          ;;*cxx-compiler-output-path*
-                          ;;" "
-                          *cxx-compiler-working-directory* +cxx-compiler-lib-name+ ".cpp -o "
-                          *cxx-compiler-working-directory* +cxx-compiler-lib-name+ ".so "
-                          *cxx-compiler-link-libs*)))
+                           *cxx-compiler-executable-path*
+                           " "
+                           *cxx-compiler-internal-flags*
+                           " "
+                           *cxx-compiler-flags*
+                           " "
+                           ;;*cxx-compiler-output-path*
+                           ;;" "
+                           *cxx-compiler-working-directory* (symbol-name +cxx-compiler-lib-name+) ".cpp -o "
+                           *cxx-compiler-working-directory* (symbol-name +cxx-compiler-lib-name+) ".so "
+                           *cxx-compiler-link-libs*)))
 
     ;; create cxx file and insert code into it
     (with-open-file (cxx-source-code-file (concatenate
                                            'string
                                            *cxx-compiler-working-directory*
-                                           +cxx-compiler-lib-name+
+                                           (symbol-name +cxx-compiler-lib-name+)
                                            ".cpp")
                                           :direction :output    ;; Write to disk
                                           :if-exists :supersede ;; Overwrite the file
@@ -154,11 +154,11 @@ else returns the exit value from the process"
                                (1+ *cxx-compiler-packages-number*)))))
              (source (concatenate 'string
                                   *cxx-compiler-working-directory*
-                                  +cxx-compiler-lib-name+
+                                  (symbol-name +cxx-compiler-lib-name+)
                                   ".so"))
              (destination (concatenate 'string
                                        *cxx-compiler-working-directory*
-                                       +cxx-compiler-lib-name+
+                                       (symbol-name +cxx-compiler-lib-name+)
                                        "_" n_str ".so")))
         (uiop:copy-file source destination)
         (push
