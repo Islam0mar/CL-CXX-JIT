@@ -132,6 +132,7 @@ Tested on:
  - SBCL 2.0.1 on debian
 
 ** Todo List
+*** TODO Add redirect stdout : =freopen("/tmp/tmp.txt", "w", stdout);= @apemangr
 *** TODO Use trivial-garbage with =ClCxxDeleteObject=
 *** TODO Add non-polling =from=
 *** TODO Test functions
