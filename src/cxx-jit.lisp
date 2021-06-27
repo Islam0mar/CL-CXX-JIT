@@ -8,7 +8,7 @@
 (defconstant +cxx-compiler-wrap-cxx-path+ (uiop:merge-pathnames* "./src/wrap-cxx.cpp" (asdf:system-source-directory :cxx-jit)))
 ;;; TODO: detect compiler then set flags #+#.
 ;;;              ,but don't how to handle changing cxx-compiler-exe path
-;;; FIXME: change to "-undefined error -flat_namespace" for clang++
+;;; change to "-Wl,-undefined,error -Wl,-flat_namespace" for clang++
 (defparameter *cxx-compiler-internal-flags* "-shared -fPIC -Wl,--no-undefined -Wl,--no-allow-shlib-undefined")
 (defparameter *cxx-compiler-link-libs* "-lm")
 ;;; async process value
