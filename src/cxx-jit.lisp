@@ -33,7 +33,7 @@
                                                           ("unsigned long long" . :ullong)
                                                           ("float" . :float)
                                                           ("double" . :double)
-                                                          ("long double" . :long-double))
+                                                          ("long double" . :long-double)))
 
 
 ;; inline void lisp_error(const char *error)
