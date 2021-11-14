@@ -79,19 +79,19 @@ Start with =(ql:quickload :cxx-jit) (in-package cxx-jit)=
  - common lisp supporting [[https://www.common-lisp.net/project/cffi/][CFFI]]
  - working C++17 compiler
  - the following variables should be set according to OS and compiler used
-|---------------------------------------------+---------------------------------------------------------------------------------------------|
-| variable                                    | default value                                                                               |
-|---------------------------------------------+---------------------------------------------------------------------------------------------|
-| =*cxx-compiler-executable-path*=            | "~/usr/bin/g++~"                                                                            |
-| =*cxx-compiler-flags*=                      | "~-std=c++17 -Wall -Wextra -I/usr/include/eigen3~"                                          |
-| =*cxx-compiler-working-directory*=          | "~/tmp/~" #\/ '/' should be the last character                                              |
-| =+cxx-compiler-lib-name+=                   | (intern "~plugin~")                                                                         |
-| =+cxx-compiler-wrap-cxx-path+=              | shouldn't be changed "~path to wrap-cxx.cpp~"                                               |
-| =*cxx-compiler-internal-flags*=             | "~-shared -fPIC -Wl,--no-undefined -Wl,--no-allow-shlib-undefined~"                         |
-|                                             | for g++ and for clang++ "~-shared -fPIC -Wl,-undefined,error -Wl,-flat_namespace~"          |
-| =*cxx-compiler-link-libs*=                  | "~-lm~" these flags are added after "~-o output~" to link correctly                         |
-| =*cxx-type-name-to-cffi-type-symbol-alist*= | alist to map c++ type name to cffi type example: (push (cons "long unsigned int" :ulong) *) |
-|---------------------------------------------+---------------------------------------------------------------------------------------------|
+|---------------------------------------------+----------------------------------------------------------------------------------------------|
+| variable                                    | default value                                                                                |
+|---------------------------------------------+----------------------------------------------------------------------------------------------|
+| =*cxx-compiler-executable-path*=            | "~/usr/bin/g++~"                                                                             |
+| =*cxx-compiler-flags*=                      | "~-std=c++17 -Wall -Wextra -I/usr/include/eigen3~"                                           |
+| =*cxx-compiler-working-directory*=          | "~/tmp/~" #\/ '/' should be the last character                                               |
+| =+cxx-compiler-lib-name+=                   | (intern "~plugin~")                                                                          |
+| =+cxx-compiler-wrap-cxx-path+=              | shouldn't be changed "~path to wrap-cxx.cpp~"                                                |
+| =*cxx-compiler-internal-flags*=             | "~-shared -fPIC -Wl,--no-undefined -Wl,--no-allow-shlib-undefined~"                          |
+|                                             | for g++ and for clang++ "~-shared -fPIC -Wl,-undefined,error -Wl,-flat_namespace~"           |
+| =*cxx-compiler-link-libs*=                  | "~-lm~" these flags are added after "~-o output~" to link correctly                          |
+| =*cxx-type-name-to-cffi-type-symbol-alist*= | alist to map c++ type name to cffi type example:`(push (cons "long unsigned int" :ulong) *)` |
+|---------------------------------------------+----------------------------------------------------------------------------------------------|
 
 ** Installation
 Clone into home/common-lisp directory. Then =(ql:quickload :cxx-jit-test)=
