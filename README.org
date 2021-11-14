@@ -65,13 +65,14 @@ Start with =(ql:quickload :cxx-jit) (in-package cxx-jit)=
 *** Eigen Library Example
 Start with =(ql:quickload :cxx-jit) (in-package cxx-jit)=
 #+begin_src lisp
-     (from '("<Eigen/Core>" "<Eigen/Core>") 'import '("[](Eigen::CwiseNullaryOp<Eigen::internal::scalar_identity_op<double>,Eigen::Matrix<double, 3, 3>> x){std::stringstream s;
-         s << x;
-         return s.str();}" . "print-matrix"))
+  (from '("<Eigen/Core>" "<Eigen/Core>") 'import '("[](Eigen::CwiseNullaryOp<Eigen::internal::scalar_identity_op<double>,Eigen::Matrix<double, 3, 3>> x){
+    std::stringstream s;
+    s << x;
+    return s.str();}" . "print-matrix"))
 
-    (from '("<Eigen/Core>" "<Eigen/Core>") 'import '("static_cast<const Eigen::CwiseNullaryOp<Eigen::internal::scalar_identity_op<double>,Eigen::Matrix<double, 3, 3>> (*)()> (&Eigen::Matrix3d::Identity)" . "identity-matrix"))
+  (from '("<Eigen/Core>" "<Eigen/Core>") 'import '("static_cast<const Eigen::CwiseNullaryOp<Eigen::internal::scalar_identity_op<double>,Eigen::Matrix<double, 3, 3>> (*)()> (&Eigen::Matrix3d::Identity)" . "identity-matrix"))
 
-(print-matrix (identity-matrix))
+  (print-matrix (identity-matrix))
 #+end_src
 
 ** Prerequisites
