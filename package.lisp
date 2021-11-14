@@ -12,6 +12,7 @@
    #:*cxx-compiler-process*
    #:*cxx-compiler-packages*
    #:*cxx-compiler-packages-number*
+   #:*cxx-type-name-to-cffi-type-symbol-alist*
    #:lisp-error
    #:reg-data
    #:try-get-cxx-compiler-output

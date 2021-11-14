@@ -17,6 +17,24 @@
 (defparameter *cxx-compiler-packages* nil)
 (defparameter *cxx-compiler-packages-number* 0)
 (defparameter *cxx--fun-names* '())
+;; alist used to map C++ type name to cffi types
+(defparameter *cxx-type-name-to-cffi-type-symbol-alist* '(("const char*" . :string)
+                                                          ("char*" . :string)
+                                                          ("void" . :void)
+                                                          ("char" . :char)
+                                                          ("unsigned char" . :uchar)
+                                                          ("short" . :short)
+                                                          ("unsigned short" . :ushort)
+                                                          ("int" . :int)
+                                                          ("unsigned int" . :uint)
+                                                          ("long" . :long)
+                                                          ("unsigned long" . :ulong)
+                                                          ("long long" . :llong)
+                                                          ("unsigned long long" . :ullong)
+                                                          ("float" . :float)
+                                                          ("double" . :double)
+                                                          ("long double" . :long-double)))
+
 
 ;; inline void lisp_error(const char *error)
 (cffi:defcallback lisp-error :void ((err :string))
@@ -40,25 +58,13 @@
 (defun cffi-type (type)
   "Returns cffi-type as a keyword"
   (declare (type string type))
-  (cond
-    ((string-equal "const char*" type) :string)
-    ((string-equal "char*" type) :string)
-    ((eq #\* (elt type (1- (length type)))) :pointer)
-    ((string-equal "void" type) :void)
-    ((string-equal "char" type) :char)
-    ((string-equal "unsigned char" type) :uchar)
-    ((string-equal "short" type) :short)
-    ((string-equal "unsigned short" type) :ushort)
-    ((string-equal "int" type) :int)
-    ((string-equal "unsigned int" type) :uint)
-    ((string-equal "long" type) :long)
-    ((string-equal "unsigned long" type) :ulong)
-    ((string-equal "long long" type) :llong)
-    ((string-equal "unsigned long long" type) :ullong)
-    ((string-equal "float" type) :float)
-    ((string-equal "double" type) :double)
-    ((string-equal "long double" type) :long-double)
-    (t (format t "No Known conversion for type ~S. default to pointer~%" type) :pointer)))
+  (let ((type-symbol (cdr (assoc type
+                                 *cxx-type-name-to-cffi-type-symbol-alist*
+                                 :test #'string-equal))))
+    (cond
+      (type-symbol type-symbol)
+      ((eq #\* (elt type (1- (length type)))) :pointer)
+      (t (format t "No Known conversion for type ~S. default to pointer~%" type) :pointer))))
 
 (defun parse-input-args (arg-types)
   "return argument types (with variables if they are inputs) in a proper list"
