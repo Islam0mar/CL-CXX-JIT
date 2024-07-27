@@ -5,6 +5,7 @@
  */
 
 #include <any>
+#include <cstdint>
 #include <functional>
 #include <iostream>
 #include <memory>
