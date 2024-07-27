@@ -5,6 +5,7 @@
  */
 
 #include <any>
+#include <cstdint>
 #include <functional>
 #include <iostream>
 #include <memory>
@@ -35,9 +36,15 @@ constexpr std::string_view WrappedTypeName() {
 }
 
 class ProbeType;
+// g++ v12+ changed behavior
+#if defined(__GNUC__) && (__GNUC__ > 11)
+constexpr std::string_view kProbeTypeName("ProbeType");
+constexpr std::string_view kProbeTypeNameElaborated("class ProbeType");
+#else
 constexpr std::string_view kProbeTypeName("cl_cxx::type_name::ProbeType");
 constexpr std::string_view kProbeTypeNameElaborated(
     "class cl_cxx::type_name::ProbeType");
+#endif
 constexpr std::string_view kProbeTypeNameUsed(
     WrappedTypeName<ProbeType>().find(kProbeTypeNameElaborated) !=
             std::string_view::npos
