@@ -53,7 +53,9 @@
                                                           ("float" . :float)
                                                           ("double" . :double)
                                                           ("long double" . :long-double)
-                                                          ("bool" . :bool)))
+                                                          ("bool" . :bool)
+                                                          ("size_t" . :size)
+                                                          ("ssize_t" . :ssize)))
 
 
 ;; inline void lisp_error(const char *error)
