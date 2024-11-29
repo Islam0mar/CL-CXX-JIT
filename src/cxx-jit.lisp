@@ -20,6 +20,8 @@
 ;; alist used to map C++ type name to cffi types
 (defparameter *cxx-type-name-to-cffi-type-symbol-alist* '(("const char*" . :string)
                                                           ("char*" . :string)
+                                                          ("const char *" . :string)
+                                                          ("char *" . :string)
                                                           ("void" . :void)
                                                           ("char" . :char)
                                                           ("signed char" . :char)
