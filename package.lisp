@@ -2,7 +2,7 @@
   (:use :cl :cffi :uiop :trivial-garbage)
   ;; Basic types and constructors.
   (:export
-   #:*cxx-compiler-executable-path
+   #:*cxx-compiler-executable-path*
    #:*cxx-compiler-flags*
    #:*cxx-compiler-working-directory*
    #:+cxx-compiler-lib-name+
